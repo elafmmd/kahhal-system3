@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Triage</title>
+  <style>
+    body{
+      font-family:Segoe UI;
+      background:#f4f7fb;
+      padding:20px;
+    }
+
+    table{
+      width:100%;
+      background:white;
+      border-radius:12px;
+      overflow:hidden;
+      box-shadow:0 5px 20px rgba(0,0,0,0.08);
+    }
+
+    th, td{
+      padding:12px;
+      text-align:left;
+    }
+
+    th{
+      background:#7AB2B2;
+      color:white;
+    }
+
+    input[type="text"]{
+      width:120px;
+      padding:6px;
+    }
+
+    input[type="file"]{
+      width:180px;
+    }
+
+    button{
+      padding:8px 12px;
+      background:#7AB2B2;
+      color:white;
+      border:none;
+      border-radius:6px;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Triage</h2>
+<button type="button" onclick="logout()" style="width:auto; padding:10px 18px; margin-bottom:16px;">Logout</button>
+<table id="table">
+  <thead>
+    <tr>
+  <th>Name</th>
+  <th>Gender</th> 
+
+  <th>Age</th>
+  <th>Doctor</th>
+  <th>VA</th>
+  <th>AR</th>
+  <th>Action</th>
+</tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+function logout() {
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("userName");
+  localStorage.removeItem("username");
+  window.location.href = "login.html";
+}
+  const userRole = localStorage.getItem("userRole");
+const userName = localStorage.getItem("userName");
+
+if (userRole !== "triage") {
+  window.location.href = "login.html";
+}
+const URL = "https://script.google.com/macros/s/AKfycbxtkrTGqSjtMT4OhHqAg5LPu9CypFdHT8Jg2pLt6UXnkIn722KtZ83P4hQp1-Hcpik9lw/exec";
+
+async function loadPatients(){
+  try {
+    const res = await fetch(URL);
+    const data = await res.json();
+
+    const tbody = document.querySelector("tbody");
+    tbody.innerHTML = "";
+
+    const filtered = data.filter(p => String(p["Status"] || "").trim() === "Reception");
+
+    filtered.forEach(p => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+  <td>${p["Patient Name"] || ""}</td>
+  <td>${p["Gender"] || ""}</td>
+  <td>${p["Age"] || ""}</td>
+  <td>${p["Doctor Name"] || ""}</td>
+  <td><input type="text" id="va-${p.rowIndex}"></td>
+  <td><input type="text" id="ar-${p.rowIndex}"></td>
+  <td><button id="btn-${p.rowIndex}" onclick="save(${p.rowIndex})">Save</button></td>
+`;
+
+      tbody.appendChild(tr);
+    });
+  } catch (error) {
+    console.error(error);
+    alert("Failed to load patients");
+  }
+}
+
+
+
+async function save(rowIndex){
+  try {
+    const btn = document.getElementById(`btn-${rowIndex}`);
+    const va = document.getElementById(`va-${rowIndex}`).value;
+    const ar = document.getElementById(`ar-${rowIndex}`).value;
+
+    // ✨ تغيير شكل الزر أثناء الحفظ
+    btn.innerText = "Saving...";
+    btn.disabled = true;
+    btn.style.background = "#9ca3af";
+
+    const res = await fetch(URL, {
+      method:"POST",
+      body: JSON.stringify({
+        action:"update",
+        rowIndex: rowIndex,
+        va: va,
+        ar: ar,
+         triageUser: localStorage.getItem("userName") || ""
+      })
+    });
+
+    const result = await res.json();
+
+    if (result.result === "updated") {
+      // ✨ نجاح
+      btn.innerText = "Saved ✓";
+      btn.style.background = "#16a34a";
+
+      // بعد ثانية يختفي الصف (لأنه بيروح من اللستة)
+      setTimeout(() => {
+        loadPatients();
+      }, 500);
+
+    } else {
+      throw new Error(result.message || "Unknown error");
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    const btn = document.getElementById(`btn-${rowIndex}`);
+    btn.innerText = "Error";
+    btn.style.background = "#dc2626";
+    btn.disabled = false;
+  }
+}
+loadPatients();
+</script>
+
+</body>
+</html>
