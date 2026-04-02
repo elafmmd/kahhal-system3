@@ -91,13 +91,16 @@ function logout() {
   localStorage.removeItem("username");
   window.location.href = "login.html";
 }
-  const userRole = localStorage.getItem("userRole");
+
+const userRole = localStorage.getItem("userRole");
 const userName = localStorage.getItem("userName");
 
 if (userRole !== "triage") {
   window.location.href = "login.html";
 }
+
 const URL = "https://script.google.com/macros/s/AKfycbzkvYNe-y6Ir5Ncfldk5mdtj9ealfZXae9rJPAIHbBeX5J94XsKBaNME31I_peXgXjzeQ/exec";
+
 function isToday(dateString){
   const today = new Date();
   const d = new Date(dateString);
@@ -106,38 +109,50 @@ function isToday(dateString){
          d.getMonth() === today.getMonth() &&
          d.getFullYear() === today.getFullYear();
 }
+
 async function loadPatients(){
   try {
     const res = await fetch(URL);
     const data = await res.json();
 
-    const tbody = document.querySelector("tbody");
+    const tbody = document.querySelector("#table tbody");
     tbody.innerHTML = "";
 
-const filtered = data.filter
+    const filtered = data.filter(p =>
+      (p["Status"] || "") === "Reception" &&
+      p["Timestamp"] &&
+      isToday(p["Timestamp"])
+    );
+
     filtered.forEach(p => {
       const tr = document.createElement("tr");
 
       tr.innerHTML = `
-  <td>${p["Patient Name"] || ""}</td>
-  <td>${p["Gender"] || ""}</td>
-  <td>${p["ID Number"] || ""}</td>
-  <td>${p["Age"] || ""}</td>
-  <td>${p["Doctor Name"] || ""}</td>
-  <td><input type="text" id="va-${p.rowIndex}"></td>
-  <td><textarea id="ar-${p.rowIndex}" class="history-box"></textarea></td>
-  <td><button id="btn-${p.rowIndex}" onclick="save(${p.rowIndex})">Save</button></td>
-`;
+        <td>${p["Patient Name"] || ""}</td>
+        <td>${p["Gender"] || ""}</td>
+        <td>${p["ID Number"] || ""}</td>
+        <td>${p["Age"] || ""}</td>
+        <td>${p["Doctor Name"] || ""}</td>
+        <td><input type="text" id="va-${p.rowIndex}"></td>
+        <td><textarea id="ar-${p.rowIndex}" class="history-box"></textarea></td>
+        <td><button id="btn-${p.rowIndex}" onclick="save(${p.rowIndex})">Save</button></td>
+      `;
 
       tbody.appendChild(tr);
     });
+
   } catch (error) {
     console.error(error);
     alert("Failed to load patients");
   }
 }
 
-
+document.addEventListener("input", function(e){
+  if(e.target.classList.contains("history-box") || e.target.classList.contains("plan-box")){
+    e.target.style.height = "auto";
+    e.target.style.height = e.target.scrollHeight + "px";
+  }
+});
 
 async function save(rowIndex){
   try {
@@ -145,7 +160,6 @@ async function save(rowIndex){
     const va = document.getElementById(`va-${rowIndex}`).value;
     const ar = document.getElementById(`ar-${rowIndex}`).value;
 
-    // ✨ تغيير شكل الزر أثناء الحفظ
     btn.innerText = "Saving...";
     btn.disabled = true;
     btn.style.background = "#9ca3af";
@@ -157,27 +171,19 @@ async function save(rowIndex){
         rowIndex: rowIndex,
         va: va,
         ar: ar,
-         triageUser: localStorage.getItem("userName") || ""
+        triageUser: localStorage.getItem("userName") || ""
       })
     });
-document.addEventListener("input", function(e){
-  if(e.target.classList.contains("history-box") || e.target.classList.contains("plan-box")){
-    e.target.style.height = "auto";
-    e.target.style.height = e.target.scrollHeight + "px";
-  }
-});
+
     const result = await res.json();
 
     if (result.result === "updated") {
-      // ✨ نجاح
       btn.innerText = "Saved ✓";
       btn.style.background = "#16a34a";
 
-      // بعد ثانية يختفي الصف (لأنه بيروح من اللستة)
       setTimeout(() => {
         loadPatients();
       }, 500);
-
     } else {
       throw new Error(result.message || "Unknown error");
     }
@@ -191,6 +197,7 @@ document.addEventListener("input", function(e){
     btn.disabled = false;
   }
 }
+
 loadPatients();
 </script>
 
