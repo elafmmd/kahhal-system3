@@ -19,6 +19,7 @@
       padding:30px;
       border-radius:16px;
       box-shadow:0 8px 25px rgba(0,0,0,0.08);
+      margin-bottom:25px;
     }
 
     h1{
@@ -90,12 +91,70 @@
     .error-border{
       border:2px solid #dc2626 !important;
     }
+
+    .top-actions{
+      display:flex;
+      gap:14px;
+      margin-bottom:20px;
+      flex-wrap:wrap;
+    }
+
+    .top-actions button{
+      width:auto;
+      padding:12px 22px;
+      margin-top:0;
+    }
+
+    .readonly{
+      background:#f9fafb;
+    }
+
+    @media (max-width: 768px){
+      .grid,
+      .name-gender{
+        grid-template-columns:1fr;
+      }
+    }
+
+    #serviceName{
+  width:100%;
+  padding:14px;
+  border:1px solid #d1d5db;
+  border-radius:12px;
+  font-size:16px;
+  background:white;
+}
+
+
+@page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  body {
+    zoom: 0.9;
+  }
+
+  table {
+    page-break-inside: avoid;
+  }
+
+  .total-box {
+    page-break-inside: avoid;
+  }
+
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Reception Registration</h1>
-<button type="button" onclick="logout()" style="width:auto; padding:10px 18px; margin-bottom:16px;">Logout</button>
+
+    <div class="top-actions">
+      <button type="button" onclick="logout()">Logout</button>
+      <button type="button" onclick="toggleServices()">Services Registration</button>
+      <button type="button" onclick="downloadDailyRevenuePdf()">Daily Revenue PDF</button>
+    </div>
+
     <div class="grid">
       <div class="full">
         <div class="name-gender">
@@ -130,30 +189,28 @@
       </div>
 
       <div>
-  <label>Payment Type</label>
-  <select id="paymentType">
-    <option value="">Select</option>
-    <option value="Cash">Cash</option>
-    <option value="Insurance">Insurance</option>
-  </select>
-</div>
+        <label>Payment Type</label>
+        <select id="paymentType">
+          <option value="">Select</option>
+          <option value="Cash">Cash</option>
+          <option value="Insurance">Insurance</option>
+        </select>
+      </div>
 
-<div>
-  <label>Payment Method</label>
-  <select id="paymentMethod">
-    <option value="">Select</option>
-    <option value="Cash">Cash</option>
-    <option value="Card">Card</option>
-    <option value="Fullowup">Fullowup</option>
+      <div>
+        <label>Payment Method</label>
+        <select id="paymentMethod">
+          <option value="">Select</option>
+          <option value="Cash">Cash</option>
+          <option value="Card">Card</option>
+          <option value="Followup">Followup</option>
+        </select>
+      </div>
 
-  </select>
-</div>
-
-<div>
-  <label>Amount</label>
-  <input type="number" id="amount" />
-</div>
-      
+      <div>
+        <label>Amount</label>
+        <input type="number" id="amount" />
+      </div>
 
       <div>
         <label>Nationality</label>
@@ -176,12 +233,13 @@
         <label>Doctor Name</label>
         <select id="doctorName">
           <option value="">Select Doctor</option>
-          <option>MUATH ALRUSHOOD</option>
+          <option>MOHANNA AL JINDAN</option>
           <option>ABDULRAHMAN ALGHADYAN</option>
-          <option>ELHAM AL TAMIMI</option>
+          <option>ABDULAZIZ ALRUSHOOD</option>
           <option>QUSAI MOHAMMED</option>
-          <option>MOFI ALWALMANY</option>
-          <option>SANA YASSIN</option>
+          <option>ABDALLAH ALOWAID</option>
+          <option>ABDULAZIZ ALSOMALI</option>
+           <option>ABDULRAHMAN ALHADLAG</option>
           <option>AHMED EZZAT</option>
           <option>WAQAR MUSTAFA</option>
           <option>NAJAR MOHAMMAED</option>
@@ -191,6 +249,7 @@
           <option>Jeseena Jamaludin</option>
           <option>THURAYA</option>
           <option>SUSHMITHA ARCOT</option>
+
         </select>
       </div>
     </div>
@@ -199,24 +258,177 @@
     <div class="msg" id="msg"></div>
   </div>
 
-  <script>
-    function logout() {
-  localStorage.removeItem("userRole");
-  localStorage.removeItem("userName");
-  localStorage.removeItem("username");
-  window.location.href = "login.html";
-}
-    const userRole = localStorage.getItem("userRole");
-const userName = localStorage.getItem("userName");
+  <div class="container" id="servicesBox" style="display:none;">
+    <h1>Services Registration</h1>
 
-if (userRole !== "reception") {
-  window.location.href = "login.html";
-}
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtkrTGqSjtMT4OhHqAg5LPu9CypFdHT8Jg2pLt6UXnkIn722KtZ83P4hQp1-Hcpik9lw/exec";
-let lastInvoiceData = null;
+    <div class="grid">
+      <div>
+        <label>Search by Mobile Number</label>
+        <input type="text" id="serviceSearchMobile">
+      </div>
+
+      <div>
+        <label>Search by ID Number</label>
+        <input type="text" id="serviceSearchId">
+      </div>
+
+      <div class="full">
+        <button type="button" onclick="findPatientForService()">Search Patient</button>
+      </div>
+
+      <div class="full">
+        <div class="msg" id="serviceSearchMsg"></div>
+      </div>
+
+      <div>
+        <label>Patient Name</label>
+        <input type="text" id="servicePatientName" class="readonly" readonly>
+      </div>
+
+      <div>
+        <label>Gender</label>
+        <input type="text" id="serviceGender" class="readonly" readonly>
+      </div>
+
+      <div>
+        <label>Age</label>
+        <input type="text" id="serviceAge" class="readonly" readonly>
+      </div>
+
+      <div>
+        <label>Nationality</label>
+        <input type="text" id="serviceNationality" class="readonly" readonly>
+      </div>
+
+      <div class="full">
+        <label>Doctor Name</label>
+        <input type="text" id="serviceDoctorName" class="readonly" readonly>
+      </div>
+
+      <div class="full">
+        <label>Service Name</label>
+<select id="serviceName">
+  <option value="">Select Service</option>
+
+  <option>OCT</option>
+  <option>COLOR PHOTO</option>
+  <option>VISUAL FIELD</option>
+  <option>PENTACAM</option>
+  <option>B SCAN</option>
+  <option>LASIK WORK UP</option>
+  <option>CONFO SCAN</option>
+  <option>LENS STAR</option>
+  <option>ANTERIOR SEGMENT (AS PHOTO)</option>
+  <option>EYLEA</option>
+  <option>LUCENTIS</option>
+  <option>VABYSMO</option>
+  <option>OZURDEX</option>
+</select>      </div>
+
+      <div>
+        <label>Amount</label>
+        <input type="number" id="serviceAmount">
+      </div>
+
+      <div>
+        <label>Payment Type</label>
+        <select id="servicePaymentType">
+          <option value="">Select</option>
+          <option value="Cash">Cash</option>
+          <option value="Insurance">Insurance</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Payment Method</label>
+        <select id="servicePaymentMethod">
+          <option value="">Select</option>
+          <option value="Cash">Cash</option>
+          <option value="Card">Card</option>
+        </select>
+      </div>
+
+      <div class="full">
+        <button type="button" id="saveServiceBtn" onclick="saveService()">Save Service</button>
+      </div>
+
+      <div class="full">
+        <button type="button" id="printServiceBtn" onclick="printServiceInvoice()" style="display:none;">Print Invoice</button>
+      </div>
+
+      <div class="full">
+        <div class="msg" id="serviceMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="printModal" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.5);
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+  ">
+    <div style="
+      background:white;
+      padding:30px;
+      border-radius:12px;
+      width:320px;
+      text-align:center;
+    ">
+      <h3 style="margin-bottom:20px;">Print Invoice?</h3>
+
+      <button onclick="confirmPrint()" style="
+        background:#7AB2B2;
+        color:white;
+        border:none;
+        padding:10px 20px;
+        border-radius:6px;
+        margin-right:10px;
+        cursor:pointer;
+      ">Print</button>
+
+      <button onclick="closePrintModal()" style="
+        background:#ccc;
+        border:none;
+        padding:10px 20px;
+        border-radius:6px;
+        cursor:pointer;
+      ">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    const URL = "https://script.google.com/macros/s/AKfycbzkvYNe-y6Ir5Ncfldk5mdtj9ealfZXae9rJPAIHbBeX5J94XsKBaNME31I_peXgXjzeQ/exec";
+
+    const userRole = localStorage.getItem("userRole");
+    const userName = localStorage.getItem("userName");
+
+    if (userRole !== "reception") {
+      window.location.href = "login.html";
+    }
+
+    let lastInvoiceData = null;
+    let lastServiceInvoiceData = null;
+
+    function logout() {
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userName");
+      localStorage.removeItem("username");
+      window.location.href = "login.html";
+    }
+
+    function toggleServices() {
+      const box = document.getElementById("servicesBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    }
 
     function clearErrors() {
-      document.querySelectorAll("input, select").forEach(el => el.classList.remove("error-border"));
+      document.querySelectorAll("#patientName, #gender, #age, #idNumber, #mobileNumber, #paymentType, #paymentMethod, #amount, #nationality, #doctorName")
+        .forEach(el => el.classList.remove("error-border"));
     }
 
     function markError(id) {
@@ -227,17 +439,17 @@ let lastInvoiceData = null;
       clearErrors();
 
       const requiredFields = [
-  "patientName",
-  "gender",
-  "age",
-  "idNumber",
-  "mobileNumber",
-  "paymentType",
-  "paymentMethod",
-  "amount",
-  "nationality",
-  "doctorName"
-];
+        "patientName",
+        "gender",
+        "age",
+        "idNumber",
+        "mobileNumber",
+        "paymentType",
+        "paymentMethod",
+        "amount",
+        "nationality",
+        "doctorName"
+      ];
 
       let hasError = false;
 
@@ -253,13 +465,11 @@ let lastInvoiceData = null;
         return "Please fill all required fields.";
       }
 
-      // Mobile: 05 + 8 digits
       if (!/^05\d{8}$/.test(data.mobileNumber)) {
         markError("mobileNumber");
         return "Mobile number must start with 05 and contain 10 digits.";
       }
 
-      // ID rule
       if (/^[12]/.test(data.idNumber)) {
         if (!/^[12]\d{9}$/.test(data.idNumber)) {
           markError("idNumber");
@@ -270,91 +480,24 @@ let lastInvoiceData = null;
       return "";
     }
 
-    function printInvoice(data) {
-  const printWindow = window.open("", "_blank", "width=800,height=700");
-
-  if (!printWindow) {
-    throw new Error("Popup blocked");
-  }
-
-  const html = `
-  <html>
-  <head>
-    <title>Invoice</title>
-    <style>
-      body{
-        font-family: Arial, sans-serif;
-        padding:40px;
-        color:#111827;
-      }
-      h1{
-        text-align:center;
-        margin-bottom:30px;
-      }
-      .box{
-        border:1px solid #d1d5db;
-        border-radius:12px;
-        padding:24px;
-      }
-      .row{
-        display:flex;
-        justify-content:space-between;
-        padding:10px 0;
-        border-bottom:1px solid #e5e7eb;
-      }
-      .row:last-child{
-        border-bottom:none;
-      }
-      .label{
-        font-weight:700;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Invoice</h1>
-    <div class="box">
-      <div class="row"><div class="label">Patient Name</div><div>${data.patientName}</div></div>
-      <div class="row"><div class="label">Gender</div><div>${data.gender}</div></div>
-      <div class="row"><div class="label">Nationality</div><div>${data.nationality}</div></div>
-      <div class="row"><div class="label">Doctor Name</div><div>${data.doctorName}</div></div>
-      <div class="row"><div class="label">Payment Type</div><div>${data.paymentType}</div></div>
-      <div class="row"><div class="label">Payment Method</div><div>${data.paymentMethod}</div></div>
-      <div class="row"><div class="label">Amount</div><div>${data.amount}</div></div>
-    </div>
-    <script>
-      window.onload = function() {
-        window.print();
-      }
-    <\/script>
-  </body>
-  </html>
-  `;
-
-  printWindow.document.open();
-  printWindow.document.write(html);
-  printWindow.document.close();
-}
-function printLastInvoice() {
-  if (!lastInvoiceData) return;
-  printInvoice(lastInvoiceData);
-}
     async function submitForm() {
       const msg = document.getElementById("msg");
       const saveBtn = document.getElementById("saveBtn");
 
       const data = {
-  patientName: document.getElementById("patientName").value.trim(),
-  gender: document.getElementById("gender").value,
-  age: document.getElementById("age").value.trim(),
-  idNumber: document.getElementById("idNumber").value.trim(),
-  mobileNumber: document.getElementById("mobileNumber").value.trim(),
-  paymentType: document.getElementById("paymentType").value,
-  paymentMethod: document.getElementById("paymentMethod").value,
-  amount: document.getElementById("amount").value.trim(),
-  nationality: document.getElementById("nationality").value,
-  doctorName: document.getElementById("doctorName").value,
-  status: "Reception",
-receptionist: userName || ""};
+        patientName: document.getElementById("patientName").value.trim(),
+        gender: document.getElementById("gender").value,
+        age: document.getElementById("age").value.trim(),
+        idNumber: document.getElementById("idNumber").value.trim(),
+        mobileNumber: document.getElementById("mobileNumber").value.trim(),
+        paymentType: document.getElementById("paymentType").value,
+        paymentMethod: document.getElementById("paymentMethod").value,
+        amount: document.getElementById("amount").value.trim(),
+        nationality: document.getElementById("nationality").value,
+        doctorName: document.getElementById("doctorName").value,
+        status: "Reception",
+        receptionist: userName || ""
+      };
 
       const validationMessage = validateForm(data);
       if (validationMessage) {
@@ -369,35 +512,35 @@ receptionist: userName || ""};
         msg.style.color = "#374151";
         msg.textContent = "Saving...";
 
-        const res = await fetch(SCRIPT_URL, {
+        const res = await fetch(URL, {
           method: "POST",
           body: JSON.stringify(data)
         });
 
         const result = await res.json();
 
-       if (result.result === "success") {
-  msg.style.color = "green";
-  msg.textContent = "Patient saved successfully.";
+        if (result.result === "success") {
+          msg.style.color = "green";
+          msg.textContent = "Patient saved successfully.";
 
-  lastInvoiceData = data;
+          lastInvoiceData = data;
 
-  document.getElementById("patientName").value = "";
-  document.getElementById("gender").value = "";
-  document.getElementById("age").value = "";
-  document.getElementById("idNumber").value = "";
-  document.getElementById("mobileNumber").value = "";
-  document.getElementById("paymentType").value = "";
-  document.getElementById("paymentMethod").value = "";
-  document.getElementById("amount").value = "";
-  document.getElementById("nationality").value = "";
-  document.getElementById("doctorName").value = "";
+          document.getElementById("patientName").value = "";
+          document.getElementById("gender").value = "";
+          document.getElementById("age").value = "";
+          document.getElementById("idNumber").value = "";
+          document.getElementById("mobileNumber").value = "";
+          document.getElementById("paymentType").value = "";
+          document.getElementById("paymentMethod").value = "";
+          document.getElementById("amount").value = "";
+          document.getElementById("nationality").value = "";
+          document.getElementById("doctorName").value = "";
 
-  openPrintModal();
-} else {
-  msg.style.color = "red";
-  msg.textContent = "Failed to save data.";
-}
+          openPrintModal();
+        } else {
+          msg.style.color = "red";
+          msg.textContent = result.message || "Failed to save data.";
+        }
       } catch (error) {
         console.error(error);
         msg.style.color = "red";
@@ -408,60 +551,351 @@ receptionist: userName || ""};
       }
     }
 
+function printInvoice(data) {
+  const visitType = data.paymentMethod === "Followup" ? "Follow Up" : "Consultation";
+
+  const printWindow = window.open("", "_blank", "width=800,height=700");
+  if (!printWindow) throw new Error("Popup blocked");
+
+  const html = `
+    <html>
+    <head>
+      <title>Invoice</title>
+      <style>
+        body{font-family:Arial,sans-serif;padding:40px;color:#111827;}
+        h1{text-align:center;margin-bottom:30px;}
+        .box{border:1px solid #d1d5db;border-radius:12px;padding:24px;}
+        .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e5e7eb;}
+        .row:last-child{border-bottom:none;}
+        .label{font-weight:700;}
+      </style>
+    </head>
+    <body>
+      <h1>Invoice</h1>
+      <div class="box">
+        <div class="row"><div class="label">Patient Name</div><div>${data.patientName}</div></div>
+        <div class="row"><div class="label">ID Number</div><div>${data.idNumber}</div></div>
+        <div class="row"><div class="label">Mobile Number</div><div>${data.mobileNumber}</div></div>
+        <div class="row"><div class="label">Gender</div><div>${data.gender}</div></div>
+        <div class="row"><div class="label">Nationality</div><div>${data.nationality}</div></div>
+        <div class="row"><div class="label">Doctor Name</div><div>${data.doctorName}</div></div>
+        <div class="row"><div class="label">Visit Type</div><div>${visitType}</div></div>
+        <div class="row"><div class="label">Payment Type</div><div>${data.paymentType}</div></div>
+        <div class="row"><div class="label">Payment Method</div><div>${data.paymentMethod}</div></div>
+        <div class="row"><div class="label">Amount</div><div>${data.amount}</div></div>
+      </div>
+      <script>
+        window.onload = function(){ window.print(); }
+      <\/script>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.open();
+  printWindow.document.write(html);
+  printWindow.document.close();
+}
+
     function openPrintModal() {
-  document.getElementById("printModal").style.display = "flex";
-}
+      document.getElementById("printModal").style.display = "flex";
+    }
 
-function closePrintModal() {
-  document.getElementById("printModal").style.display = "none";
-}
+    function closePrintModal() {
+      document.getElementById("printModal").style.display = "none";
+    }
 
-function confirmPrint() {
-  closePrintModal();
-  if (lastInvoiceData) {
-    printInvoice(lastInvoiceData);
+    function confirmPrint() {
+      closePrintModal();
+      if (lastInvoiceData) {
+        printInvoice(lastInvoiceData);
+      }
+    }
+
+    async function findPatientForService() {
+      const mobileNumber = document.getElementById("serviceSearchMobile").value.trim();
+      const idNumber = document.getElementById("serviceSearchId").value.trim();
+      const msg = document.getElementById("serviceSearchMsg");
+
+      if (!mobileNumber && !idNumber) {
+        msg.style.color = "red";
+        msg.textContent = "Enter Mobile Number or ID Number";
+        return;
+      }
+
+      try {
+        msg.style.color = "#374151";
+        msg.textContent = "Searching...";
+
+        const res = await fetch(URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "find_patient",
+            mobileNumber: mobileNumber,
+            idNumber: idNumber
+          })
+        });
+
+        const result = await res.json();
+
+        if (result.result === "found") {
+          const p = result.patient;
+
+          document.getElementById("servicePatientName").value = p.patientName || "";
+          document.getElementById("serviceGender").value = p.gender || "";
+          document.getElementById("serviceAge").value = p.age || "";
+          document.getElementById("serviceNationality").value = p.nationality || "";
+          document.getElementById("serviceDoctorName").value = p.doctorName || "";
+
+          if (!idNumber) document.getElementById("serviceSearchId").value = p.idNumber || "";
+          if (!mobileNumber) document.getElementById("serviceSearchMobile").value = p.mobileNumber || "";
+
+          msg.style.color = "green";
+          msg.textContent = "Patient found.";
+        } else if (result.result === "not_found") {
+          msg.style.color = "red";
+          msg.textContent = "Patient not found.";
+        } else {
+          msg.style.color = "red";
+          msg.textContent = result.message || "Search failed.";
+        }
+      } catch (error) {
+        console.error(error);
+        msg.style.color = "red";
+        msg.textContent = "Connection error.";
+      }
+    }
+
+    async function saveService() {
+      const msg = document.getElementById("serviceMsg");
+      const btn = document.getElementById("saveServiceBtn");
+
+      const data = {
+        patientName: document.getElementById("servicePatientName").value.trim(),
+        gender: document.getElementById("serviceGender").value.trim(),
+        age: document.getElementById("serviceAge").value.trim(),
+        idNumber: document.getElementById("serviceSearchId").value.trim(),
+        mobileNumber: document.getElementById("serviceSearchMobile").value.trim(),
+        nationality: document.getElementById("serviceNationality").value.trim(),
+        doctorName: document.getElementById("serviceDoctorName").value.trim(),
+        serviceName: document.getElementById("serviceName").value.trim(),
+        amount: document.getElementById("serviceAmount").value.trim(),
+        paymentType: document.getElementById("servicePaymentType").value,
+        paymentMethod: document.getElementById("servicePaymentMethod").value,
+        receptionist: userName || ""
+      };
+
+      if (!data.patientName || !data.serviceName || !data.amount || !data.paymentType || !data.paymentMethod) {
+        msg.style.color = "red";
+        msg.textContent = "Please fill all required fields.";
+        return;
+      }
+
+      try {
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+        msg.style.color = "#374151";
+        msg.textContent = "Saving...";
+
+        const res = await fetch(URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "save_service",
+            ...data
+          })
+        });
+
+        const result = await res.json();
+
+        if (result.result === "success") {
+          msg.style.color = "green";
+          msg.textContent = "Service saved successfully.";
+
+          lastServiceInvoiceData = { ...data };
+          document.getElementById("printServiceBtn").style.display = "block";
+        } else {
+          msg.style.color = "red";
+          msg.textContent = result.message || "Failed to save.";
+        }
+      } catch (error) {
+        console.error(error);
+        msg.style.color = "red";
+        msg.textContent = "Connection error.";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Save Service";
+      }
+    }
+
+    function printServiceInvoice() {
+      if (!lastServiceInvoiceData) return;
+
+      const d = lastServiceInvoiceData;
+
+      const html = `
+        <html>
+        <head>
+          <title>Service Invoice</title>
+          <style>
+            body{font-family:Segoe UI,Arial,sans-serif;padding:30px;}
+            h2{text-align:center;}
+            table{width:100%;border-collapse:collapse;margin-top:20px;}
+            td,th{border:1px solid #ccc;padding:10px;text-align:left;}
+          </style>
+        </head>
+        <body>
+          <h2>Service Invoice</h2>
+          <table>
+            <tr><th>Patient Name</th><td>${d.patientName}</td></tr>
+            <tr><th>ID Number</th><td>${d.idNumber}</td></tr>
+<tr><th>Mobile Number</th><td>${d.mobileNumber}</td></tr>
+            <tr><th>Gender</th><td>${d.gender}</td></tr>
+            <tr><th>Nationality</th><td>${d.nationality}</td></tr>
+            <tr><th>Doctor Name</th><td>${d.doctorName}</td></tr>
+            <tr><th>Service Name</th><td>${d.serviceName}</td></tr>
+            <tr><th>Amount</th><td>${d.amount}</td></tr>
+            <tr><th>Payment Type</th><td>${d.paymentType}</td></tr>
+            <tr><th>Payment Method</th><td>${d.paymentMethod}</td></tr>
+          </table>
+          <script>
+            window.onload = function() {
+              window.print();
+            }
+          <\/script>
+        </body>
+        </html>
+      `;
+
+      const w = window.open("", "_blank", "width=900,height=700");
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    }
+    async function downloadDailyRevenuePdf() {
+  try {
+    const receptionist = localStorage.getItem("userName") || "";
+
+    if (!receptionist) {
+      alert("Receptionist name not found");
+      return;
+    }
+
+    const res = await fetch(URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "daily_revenue",
+        receptionist: receptionist
+      })
+    });
+
+    const result = await res.json();
+
+    if (result.result !== "success") {
+      alert(result.message || "Failed to load daily revenue");
+      return;
+    }
+
+    const rows = result.rows || [];
+    const total = result.total || 0;
+
+    const tableRows = rows.length
+      ? rows.map(r => `
+          <tr>
+            <td>${r.patientName || ""}</td>
+            <td>${r.idNumber || ""}</td>
+            <td>${r.amount || 0}</td>
+          </tr>
+        `).join("")
+      : `
+        <tr>
+          <td colspan="3" style="text-align:center;">No revenue for today</td>
+        </tr>
+      `;
+
+    const html = `
+      <html>
+      <head>
+        <title>Daily Revenue Report</title>
+        <style>
+          body{
+            font-family: Arial, sans-serif;
+            padding: 15px;
+            color: #111827;
+          }
+          h1{
+            text-align:center;
+            margin-bottom:10px;
+          }
+          .sub{
+            text-align:center;
+            margin-bottom:25px;
+            color:#374151;
+            font-size:16px;
+          }
+          table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:20px;
+          }
+          th, td{
+            border:1px solid #d1d5db;
+            padding:10px;
+            text-align:left;
+          }
+          th{
+            background:#7AB2B2;
+            color:white;
+          }
+          .total-box{
+            margin-top:25px;
+            padding:14px;
+            border:2px solid #7AB2B2;
+            border-radius:10px;
+            font-size:20px;
+            font-weight:700;
+            text-align:right;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Daily Revenue Report</h1>
+        <div class="sub">Receptionist: ${receptionist}</div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Patient Name</th>
+              <th>ID Number</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+
+        <div class="total-box">
+          Total Revenue: ${total}
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        <\/script>
+      </body>
+      </html>
+    `;
+
+    const w = window.open("", "_blank", "width=1000,height=800");
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+
+  } catch (error) {
+    console.error(error);
+    alert("Connection error");
   }
 }
   </script>
-
-<div id="printModal" style="
-  display:none;
-  position:fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background:rgba(0,0,0,0.5);
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-">
-  <div style="
-    background:white;
-    padding:30px;
-    border-radius:12px;
-    width:320px;
-    text-align:center;
-  ">
-    <h3 style="margin-bottom:20px;">Print Invoice?</h3>
-
-    <button onclick="confirmPrint()" style="
-      background:#7AB2B2;
-      color:white;
-      border:none;
-      padding:10px 20px;
-      border-radius:6px;
-      margin-right:10px;
-      cursor:pointer;
-    ">Print</button>
-
-    <button onclick="closePrintModal()" style="
-      background:#ccc;
-      border:none;
-      padding:10px 20px;
-      border-radius:6px;
-      cursor:pointer;
-    ">Cancel</button>
-  </div>
-</div>
-
 </body>
 </html>
