@@ -179,14 +179,15 @@ async function loadPatients(forceReload = false){
 
     const targetStatus = viewMode === "current" ? "Triage Done" : "Doctor Done";
 
-    const filtered = data.filter(p =>
-  String(p["Status"] || "").trim() === "Triage Done" &&
-  String(p["Doctor Name"] || "").trim() === doctorName &&
-  isToday(p["Timestamp"])
-);
+    const filtered = allPatients.filter(p =>
+      String(p["Status"] || "").trim() === targetStatus &&
+      String(p["Doctor Name"] || "").trim() === doctorName &&
+      p["Timestamp"] &&
+      isToday(p["Timestamp"])
+    );
 
     if (!filtered.length) {
-tbody.innerHTML = `<tr><td colspan="9" class="muted">No patients found.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="muted">No patients found.</td></tr>`;
       return;
     }
 
@@ -195,35 +196,36 @@ tbody.innerHTML = `<tr><td colspan="9" class="muted">No patients found.</td></tr
 
       if (viewMode === "current") {
         tr.innerHTML = `
-  <td>${p["Patient Name"] || ""}</td>
-  <td>${p["Gender"] || ""}</td>
-  <td>${p["ID Number"] || ""}</td>
-  <td>${p["Nationality"] || ""}</td>
-  <td>${p["Age"] || ""}</td>
-  <td>${p["Payment Type"] || ""}</td>
-  <td>${p["VA"] || ""}</td>
-  <td class="history-cell">${p["AR"] || ""}</td>
-  <td>
-    <textarea id="plan-${p.rowIndex}" class="plan-box">${p["Management Plan"] || ""}</textarea>
-  </td>
-  <td>
-    <button id="btn-${p.rowIndex}" onclick="saveDoctor(${p.rowIndex})">Save</button>
-  </td>
-`;
+          <td>${p["Patient Name"] || ""}</td>
+          <td>${p["Gender"] || ""}</td>
+          <td>${p["ID Number"] || ""}</td>
+          <td>${p["Nationality"] || ""}</td>
+          <td>${p["Age"] || ""}</td>
+          <td>${p["Payment Type"] || ""}</td>
+          <td>${p["VA"] || ""}</td>
+          <td class="history-cell">${p["AR"] || ""}</td>
+          <td>
+            <textarea id="plan-${p.rowIndex}" class="plan-box">${p["Management Plan"] || ""}</textarea>
+          </td>
+          <td>
+            <button id="btn-${p.rowIndex}" onclick="saveDoctor(${p.rowIndex})">Save</button>
+          </td>
+        `;
       } else {
         tr.innerHTML = `
-  <td>${p["Patient Name"] || ""}</td>
-  <td>${p["Gender"] || ""}</td>
-  <td>${p["Nationality"] || ""}</td>
-  <td>${p["Age"] || ""}</td>
-  <td>${p["Payment Type"] || ""}</td>
-  <td>${p["VA"] || ""}</td>
-  <td class="history-cell">${p["AR"] || ""}</td>
-  <td class="history-cell">${p["Management Plan"] || ""}</td>
-  <td>
-    <button id="reopen-${p.rowIndex}" onclick="reopenDoctor(${p.rowIndex})">Reopen</button>
-  </td>
-`;
+          <td>${p["Patient Name"] || ""}</td>
+          <td>${p["Gender"] || ""}</td>
+          <td>${p["ID Number"] || ""}</td>
+          <td>${p["Nationality"] || ""}</td>
+          <td>${p["Age"] || ""}</td>
+          <td>${p["Payment Type"] || ""}</td>
+          <td>${p["VA"] || ""}</td>
+          <td class="history-cell">${p["AR"] || ""}</td>
+          <td class="history-cell">${p["Management Plan"] || ""}</td>
+          <td>
+            <button id="reopen-${p.rowIndex}" onclick="reopenDoctor(${p.rowIndex})">Reopen</button>
+          </td>
+        `;
       }
 
       tbody.appendChild(tr);
